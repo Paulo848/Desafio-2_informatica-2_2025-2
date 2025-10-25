@@ -22,18 +22,36 @@ public:
           const std::string  id_album
           );
 
+    Album(const std::string& name,
+          const std::string& duracion,
+          const std::string& selloDiscografico,
+          const std::string& fecha_lanzamiento,
+          const std::string& puntuacion,
+          const std::string& dir_portada,
+          std::string*       generos,
+          const std::string& num_generos,
+          const std::string& num_canciones,
+          const std::string  id_artista,
+          const std::string  id_album
+          );
+
     // Getters
     std::string  get_nombre()       const;
-    std::string  get_ident()        const;
+    short int    get_duracion()     const;
+    std::string  get_sell_disc()    const;
+    std::string  get_date_lanzm()   const;
+    short int    get_puntuacion()   const;
     std::string  get_dir_portada()  const;
-    std::string  get_sell_disc()    const;  // (según el diagrama)
-    int          get_punt()         const;
     std::string* get_generos(short int index) const;
     short int    get_num_gen()      const;
     short int    get_num_songs()    const;
+    std::string  get_ident()        const;
+
     int get_capacidad_can() const;
     int get_tamano_can() const;
     Cancion* get_cancion(const std::string& id);
+
+    std::string generos_como_texto(const std::string& sep = ", ") const;
 
     // Gestión de canciones (firma literal del diagrama)
     void unir_cancion(const std::string&,
@@ -53,6 +71,12 @@ public:
     ~Album();
 
 private:
+
+    static bool  parse_long (const std::string& s, long& out);
+    static long  to_long    (const std::string& s, long  def = 0);
+    static int   to_int     (const std::string& s, int   def = 0);
+    static short to_short   (const std::string& s, short def = 0);
+
     // Atributos según el diagrama
     std::string nombre;
     std::string identificador;

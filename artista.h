@@ -16,6 +16,13 @@ public:
             long int           numSeguidores,
             long int           rankingGlobal,
             short int          numAlbumes);
+    Artista(const std::string& nickname,
+            const std::string& identificador,
+            const std::string& edad,
+            const std::string& pais,
+            const std::string& numSeguidores,
+            const std::string& rankingGlobal,
+            const std::string& numAlbumes);
 
     // Agregar/Unir un álbum (firma literal del diagrama)
     void unir_album(const std::string&,
@@ -51,6 +58,12 @@ public:
     ~Artista();
 
 private:
+
+    static bool parse_long(const std::string& s, long& out);
+    static int   to_int  (const std::string& s, int def = 0);
+    static long  to_long (const std::string& s, long def = 0);
+    static short to_short(const std::string& s, short def = 0);
+
     std::string nickname;
     std::string identificador;
     int         edad;

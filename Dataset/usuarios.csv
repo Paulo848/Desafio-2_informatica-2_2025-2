@@ -1,0 +1,5 @@
+codigo_usuario,nickname,contrasena,membresia,ciudad,pais,fecha_subs,seguir_a
+U0001,ana,pass123,premium,Medellin,Colombia,2025-09-01,sergio
+U0002,sergio,serg10,premium,Bogota,Colombia,2025-09-05,mika
+U0003,mika,mk2025,premium,Seoul,Corea,2025-08-20,
+U0004,jun,jn4321,estandar,Seoul,Corea,2025-10-01,

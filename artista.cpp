@@ -1,7 +1,6 @@
 // Artista.cpp
 #include "Artista.h"
 #include "Album.h"
-#include <stdexcept>
 
 Artista::Artista()
     : nickname(),
@@ -34,6 +33,21 @@ Artista::Artista(const std::string& nickname,
     capacidad_alb(0),
     tamano_alb(0)
 {}
+
+Artista::Artista(const std::string& nickname_,
+                 const std::string& identificador_,
+                 const std::string& edadStr,
+                 const std::string& pais_,
+                 const std::string& numSegStr,
+                 const std::string& rankStr,
+                 const std::string& numAlbStr)
+    : Artista(nickname_,
+              identificador_,
+              to_int(edadStr),
+              pais_,
+              to_long(numSegStr),
+              to_long(rankStr),
+              to_short(numAlbStr)) {}
 
 bool Artista::iniciar_array_album(std::size_t n)
 {
@@ -96,6 +110,64 @@ Album* Artista::get_album(const std::string& id)
         }
     }
     return nullptr;
+}
+
+bool Artista::parse_long(const std::string& s, long& out) {
+    long val = 0;
+    int sign = 1;
+    size_t i = 0, n = s.size();
+
+    // saltar espacios simples (sin <cctype>)
+    while (i < n && (s[i] == ' ' || s[i] == '\t')) ++i;
+    if (i == n) return false;
+
+    if (s[i] == '+') { ++i; }
+    else if (s[i] == '-') { sign = -1; ++i; }
+
+    bool anyDigit = false;
+    for (; i < n; ++i) {
+        char c = s[i];
+        if (c < '0' || c > '9') {
+            // permitir espacios finales
+            while (i < n && (s[i] == ' ' || s[i] == '\t')) ++i;
+            return anyDigit && i == n ? (out = val * sign, true) : false;
+        }
+        anyDigit = true;
+
+        // acumulación sin comprobar overflow (luego saturamos en los to_*)
+        val = val * 10 + (c - '0');
+    }
+    if (!anyDigit) return false;
+    out = val * sign;
+    return true;
+}
+
+long Artista::to_long(const std::string& s, long def) {
+    long v;
+    if (!parse_long(s, v)) return def;
+    return v; // sin límites (long es el destino)
+}
+
+int Artista::to_int(const std::string& s, int def) {
+    long v;
+    if (!parse_long(s, v)) return def;
+
+    // saturación manual a rango de int de 32 bits
+    const long INT_MIN_L = -2147483648L;
+    const long INT_MAX_L =  2147483647L;
+    if (v < INT_MIN_L) v = INT_MIN_L;
+    if (v > INT_MAX_L) v = INT_MAX_L;
+    return static_cast<int>(v);
+}
+
+short Artista::to_short(const std::string& s, short def) {
+    long v;
+    if (!parse_long(s, v)) return def;
+
+    // saturación manual a rango de short
+    if (v < -32768L) v = -32768L;
+    if (v >  32767L) v =  32767L;
+    return static_cast<short>(v);
 }
 
 // Getters

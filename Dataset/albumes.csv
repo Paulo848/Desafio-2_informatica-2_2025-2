@@ -1,0 +1,8 @@
+identificadorArtista,identificador,nickname,duracion,sellDiscografico,fechaLanzamiento,puntuacion,dirPortada,genero_1,genero_2,genero_3,genero_4,numCanciones
+11111,00,beAlright,575,starship,30/1/2025,8,/data/ive/image/be_alright.png,pop,,,,3
+11111,01,IveIVE,365,starship,14/02/23,7,/data/ive/image/iveive.png,pop,,,,2
+11110,02,drip,525,yg,23/07/24,10,/data/babymonster/image/drip.png,pop,hip hop,,,3
+11110,03,batterUp,390,yg,19/08/23,8,/data/babymonster/image/batter_up.png,pop,hip hop,,,2
+11110,04,babymonster,565,yg,11/03/25,9,/data/babymonster/image/babymonster.png,pop,,,,3
+11076,05,armageddon,370,sm,27/12/24,7,/data/aespa/image/armageddon.png,pop,electronica,,,2
+11076,06,girls,537,sm,04/05/22,6,/data/aespa/image/girls.png,pop,,,,3
