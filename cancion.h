@@ -10,28 +10,26 @@ class Cancion
 public:
     Cancion();
     Cancion(const std::string& nombre,
-            int                duracion,
+            int duracion,
             const std::string& dir_archivo_premium,
             const std::string& dir_archivo_estandar,
-            long int           reproducciones,
+            long int reproducciones,
             const std::string& id_artista,
             const std::string& id_album,
             const std::string& id_song,
-            MiembroProduccion* productores,
-            short int n_produtc
-            );
+            MiembroProduccion** productores_in,
+            short int n_produtc);
 
-    Cancion(const std::string& nombre,
-            const std::string& duracion,
-            const std::string& dir_archivo_premium,
-            const std::string& dir_archivo_estandar,
-            const std::string& reproducciones,
+    Cancion(const std::string& nombre_,
+            const std::string& duracionStr,
+            const std::string& dir_archivo_premium_,
+            const std::string& dir_archivo_estandar_,
+            const std::string& reproduccionesStr,
             const std::string& id_artista,
             const std::string& id_album,
             const std::string& id_song,
-            MiembroProduccion* productores,
-            const std::string& n_produtc
-            );
+            MiembroProduccion** productores_in,
+            const std::string& n_produtc);
 
     // Getters
     std::string get_nombre()          const;
@@ -53,6 +51,11 @@ public:
                                    const std::string& rol,
                                    const std::string& contacto);
 
+    Cancion(const Cancion& other);
+    Cancion& operator=(const Cancion& other);
+
+    ~Cancion();
+
 private:
     static bool  parse_long (const std::string& s, long& out);
     static long  to_long    (const std::string& s, long  def = 0);
@@ -64,9 +67,10 @@ private:
     std::string dir_archivo_premium;
     std::string dir_archivo_estandar;
     long int    reproducciones;
-    MiembroProduccion* productores;
+    MiembroProduccion** productores;
     short int num_productores;
     std::string identificador;
+
 };
 
 #endif // CANCION_H

@@ -1,11 +1,15 @@
-#include "GestorDatos.h"
-#include "Cancion.h"
+#include "gestordatos.h"
+#include "cancion.h"
 #include "miembroproduccion.h"
-#include "Sistema.h"
+#include "sistema.h"
 #include "artista.h"
 #include "album.h"
+#include "usuario.h"
+#include "anuncio.h"
+#include "listasongs.h"
 #include <fstream>
 #include <iostream>
+
 
 // Si necesitas estas clases, incluye sus headers reales
 // #include "Artista.h"
@@ -297,21 +301,14 @@ bool GestorDatos::cargar_songs(const std::string& ruta_csv) {
                   << miembroProduccion_3 << " " << miembroProduccion_4 << " "
                   << miembroProduccion_5 << std::endl;
 
-        short int nGen = 0;
         short int valid_str = 0;
-        MiembroProduccion miembros[5] ;
-
-        //std::cout << std::endl;
-        while(nGen < 5){
-            std::string id = campos[8+nGen];
-            if(campos[8+nGen] != "") miembros[valid_str++] = *sistema_raiz->get_miembro(id);
-            nGen++;
+        MiembroProduccion* miembros[5] = {nullptr,nullptr,nullptr,nullptr,nullptr};
+        for (int i = 0; i < 5; ++i) {
+            const std::string& id = campos[8+i];
+            if (id.empty()) continue;
+            MiembroProduccion* p = sistema_raiz->get_miembro(id);
+            if (p) miembros[valid_str++] = p;   // solo si existe
         }
-        //std::cout << std::endl;
-
-        //for(int i = 0; i<valid_str; i++) std::cout << "-" << miembros[i] << "-";
-        //std::cout << std::endl;
-
         std::string n_prod = std::to_string(valid_str);
 
         // Construye y agrega
@@ -333,7 +330,11 @@ bool GestorDatos::cargar_songs(const std::string& ruta_csv) {
 
 
         Artista* art_act = sistema_raiz->get_artista(identificadorArtista);
+        if (!art_act) { ++num_errores; continue; }
+
         Album* alm_act = art_act->get_album(albumidentificador);
+        if (!alm_act) { ++num_errores; continue; }
+
         bool add_can = alm_act->anadir_cancion(can);
         if(!add_can) num_errores++;
 
@@ -344,20 +345,191 @@ bool GestorDatos::cargar_songs(const std::string& ruta_csv) {
 }
 
 bool GestorDatos::cargar_ads(const std::string& ruta_csv) {
-    // TODO
-    (void)ruta_csv;
+    std::ifstream f(ruta_csv);
+    if (!f.is_open()) return false;
+
+    std::string linea;
+
+    // descarta encabezado
+    if (!std::getline(f, linea)) return false;
+
+    while (std::getline(f, linea)) {
+        if (linea.empty()) continue;
+        if (!linea.empty() && linea.back() == '\r') linea.pop_back();
+
+        // Esperamos 4 columnas:
+        // ad_id,categoria,mensaje,ruta
+        std::string campos[4];
+        std::size_t n_e = 0;
+        std::size_t start = 0;
+
+        while (n_e < 3) { // lee 3 comas; el 4º campo sale al final
+            std::size_t pos = linea.find(separador, start);
+            if (pos == std::string::npos) break;
+            campos[n_e++] = linea.substr(start, pos - start);
+            start = pos + 1;
+        }
+        if (start <= linea.size() && n_e < 4) campos[n_e++] = linea.substr(start);
+
+        if (n_e != 4) { ++num_errores; continue; }
+
+        const std::string& id     = campos[0];
+        const std::string& cat    = campos[1];
+        const std::string& msg    = campos[2];
+        const std::string& ruta   = campos[3];
+
+        std::cout << "id=" << id
+                  << " cat=" << cat
+                  << " msg=" << msg
+                  << " ruta=" << ruta
+                  << std::endl;
+
+        if (id.empty() || cat.empty() || ruta.empty()) { ++num_errores; continue; }
+
+        Anuncio a(id, cat, msg, ruta);
+
+        if (!sistema_raiz->anadir_anuncio(a)) {
+            ++num_errores;
+            continue;
+        }
+    }
     return true;
 }
 
+
 bool GestorDatos::cargar_usuarios(const std::string& ruta_csv) {
-    // TODO
-    (void)ruta_csv;
+    std::ifstream f(ruta_csv);
+    if (!f.is_open()) return false;
+
+    std::string linea;
+
+    // descarta encabezado
+    if (!std::getline(f, linea)) return false;
+
+    while (std::getline(f, linea)) {
+        if (linea.empty()) continue;
+        if (!linea.empty() && linea.back() == '\r') linea.pop_back();
+
+        // Esperamos 8 columnas:
+        // codigo_usuario,nickname,contrasena,membresia,ciudad,pais,fecha_subs,seguir_a
+        std::string campos[8];
+        std::size_t n_e = 0;
+        std::size_t start = 0;
+
+        while (n_e < 7) { // extrae 7 comas; el último campo va fuera del bucle
+            std::size_t pos = linea.find(separador, start);
+            if (pos == std::string::npos) break;
+            campos[n_e++] = linea.substr(start, pos - start);
+            start = pos + 1;
+        }
+        if (start <= linea.size() && n_e < 8) campos[n_e++] = linea.substr(start);
+
+        if (n_e != 8) { ++num_errores; continue; }
+
+        const std::string& codigo     = campos[0];
+        const std::string& nick       = campos[1];
+        const std::string& pass       = campos[2];
+        const std::string& memb       = campos[3];
+        const std::string& ciudad     = campos[4];
+        const std::string& pais       = campos[5];
+        const std::string& fecha_subs = campos[6];
+        // const std::string& seguir_a = campos[7]; // se ignora en esta etapa
+
+        std::cout << "codigo=" << codigo
+                  << " nick=" << nick
+                  << " pass=" << pass
+                  << " memb=" << memb
+                  << " ciudad=" << ciudad
+                  << " pais=" << pais
+                  << " fecha_subs=" << fecha_subs
+                  << std::endl;
+
+        if (codigo.empty() || nick.empty()) { ++num_errores; continue; }
+
+        // Construcción “stringy” (el ctor valida membresía internamente)
+        Usuario u(nick, codigo, pass, memb, ciudad, pais, fecha_subs);
+
+        // Insertar en Sistema (copia en heap; respeta capacidad 1000)
+        if (!sistema_raiz->anadir_usuario(u)) {
+            ++num_errores;
+            continue;
+        }
+    }
     return true;
 }
 
 bool GestorDatos::cargar_favoritos(const std::string& ruta_csv) {
-    // TODO
-    (void)ruta_csv;
+    std::ifstream f(ruta_csv);
+    if (!f.is_open()) return false;
+
+    std::string linea;
+
+    // Encabezado
+    if (!std::getline(f, linea)) return false;
+
+    Usuario*     u_actual      = nullptr;
+    std::string  codigo_actual;
+
+    while (std::getline(f, linea)) {
+
+        if (!linea.empty() && linea.back()=='\r') linea.pop_back();
+
+        std::string campos[4];
+        std::size_t n_e   = 0;
+        std::size_t start = 0;
+
+        // Partir por separador (esperamos 4 campos)
+        while (n_e < 3) {
+            std::size_t pos = linea.find(separador, start);
+            if (pos == std::string::npos) break;
+            campos[n_e++] = linea.substr(start, pos - start);
+            start = pos + 1;
+        }
+        if (start <= linea.size() && n_e < 4) campos[n_e++] = linea.substr(start);
+
+        if (n_e != 4) { ++num_errores; continue; }
+
+        const std::string& codUser = campos[0]; // codigo_usuario
+        const std::string& idArt   = campos[1]; // 5 dígitos
+        const std::string& idAlb   = campos[2]; // 2 dígitos
+        const std::string& idCan   = campos[3]; // 2 dígitos
+
+        std::cout << "codUser=" << codUser
+                  << " idArt=" << idArt
+                  << " idAlb=" << idAlb
+                  << " idCan=" << idCan
+                  << std::endl;
+
+        // Cacheo de usuario para líneas consecutivas
+        if (!u_actual || codUser != codigo_actual) {
+            u_actual = sistema_raiz->get_usuario(codUser);
+            codigo_actual = codUser;
+        }
+        if (!u_actual) { ++num_errores; continue; }
+
+        // Asegurar que el usuario tiene su ListaSongs creada
+        ListaSongs* lista = u_actual->get_lista_favoritos();
+        if (!lista) {
+            // Construimos una lista vacía con capacidad por defecto (1000)
+            ListaSongs vacia(/*codigos_iniciales*/nullptr,
+                             /*codigo_propietario*/u_actual->get_codigo_usuario());
+            u_actual->set_lista_favoritos(vacia);
+            lista = u_actual->get_lista_favoritos();
+            if (!lista) { ++num_errores; continue; }
+        }
+
+        // Resolver artista
+        Artista* art = sistema_raiz->get_artista(idArt);
+        if (!art) { ++num_errores; continue; }
+
+        // Construir identificador de 9 dígitos AAAAAAABB (5+2+2)
+        const std::string id9 = idArt + idAlb + idCan;
+
+        // Añadir a favoritos (sin deduplicar en esta fase)
+        const bool ok = lista->anadir_cancion(*art, id9);
+        if (!ok) ++num_errores;
+    }
+
     return true;
 }
 

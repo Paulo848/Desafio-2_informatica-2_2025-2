@@ -1,8 +1,8 @@
-#include "Sistema.h"
-#include "SessionUsuario.h"
-#include "Artista.h"
-#include "Usuario.h"
-#include "Anuncio.h"
+#include "sistema.h"
+#include "sessionusuario.h"
+#include "artista.h"
+#include "usuario.h"
+#include "anuncio.h"
 #include "miembroproduccion.h"
 #include <iostream>
 
@@ -12,13 +12,13 @@
 
 Sistema::Sistema( const std::string& ciudad_, const std::string& pais_)
 
-    : artistas(nullptr), capacidad_art(0), tamano_art(0),
-    usuarios(nullptr), capacidad_usr(0), tamano_usr(0),
-    anuncios(nullptr), capacidad_ads(0), tamano_ads(0),
+    : artistas(nullptr), capacidad_art(1000), tamano_art(0),
+    usuarios(nullptr), capacidad_usr(1000), tamano_usr(0),
+    anuncios(nullptr), capacidad_ads(50), tamano_ads(0),
     ciudad(ciudad_), pais(pais_) {
     iniciar_array_arts(1000);
     iniciar_array_usrs(1000);
-    iniciar_array_ads(1000);
+    iniciar_array_ads(50);
 }
 
 Sistema::~Sistema() {
@@ -86,29 +86,25 @@ bool Sistema::iniciar_array_ads(int capacidad) {
 
 // ----------------------- Altas -----------------------
 
-bool Sistema::anadir_artista(Artista& a) {
+bool Sistema::anadir_artista(const Artista& a) {
     if (!artistas || tamano_art >= capacidad_art) return false;
-    // Sistema es dueño: copia por heap (requiere ctor/copias válidas)
     artistas[tamano_art++] = new Artista(a);
     return true;
 }
 
-bool Sistema::anadir_usuario(Usuario& u) {
+bool Sistema::anadir_usuario(const Usuario& u) {
     if (!usuarios || tamano_usr >= capacidad_usr) return false;
     usuarios[tamano_usr++] = new Usuario(u);
     return true;
 }
 
-bool Sistema::anadir_anuncio(Anuncio& a) {
+bool Sistema::anadir_anuncio(const Anuncio& a) {
     if (!anuncios || tamano_ads >= capacidad_ads) return false;
     anuncios[tamano_ads++] = new Anuncio(a);
     return true;
 }
 
-bool Sistema::anadir_miembro(MiembroProduccion& m){
-
-    std::cout << "it works" << std::endl;
-
+bool Sistema::anadir_miembro(const MiembroProduccion& m){
     if (!miembros || tamano_miem >= capacidad_miem) return false;
     miembros[tamano_miem++] = new MiembroProduccion(m);
     return true;

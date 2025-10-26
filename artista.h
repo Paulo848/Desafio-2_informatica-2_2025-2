@@ -39,7 +39,7 @@ public:
 
     // Nuevo: gestión del arreglo de álbumes
     bool iniciar_array_album(std::size_t n); // crea arreglo vacío de punteros
-    bool anadir_album(Album& album);         // agrega puntero si hay espacio
+    bool anadir_album(const Album& album);
 
     // Getters
     std::string get_nom()          const;
@@ -56,6 +56,9 @@ public:
 
     //Destructor para la memoria dinamica
     ~Artista();
+
+    Artista(const Artista& other);
+    Artista& operator=(const Artista& other);
 
 private:
 

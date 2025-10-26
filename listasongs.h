@@ -11,8 +11,9 @@ class ListaSongs
 public:
     // Constructor
     ListaSongs(const std::string* codigos_iniciales,
-               int                capacidad_inicial,
-               const std::string& codigo_propietario);
+               const std::string& codigo_propietario,
+               int                capacidad_inicial = 1000
+               );
 
     // Getters básicos
     int         get_num_canciones() const;   // alias de get_tamano()
@@ -26,8 +27,12 @@ public:
     Artista*    bus_art_por_can(const std::string& id_song) const;
 
     // Modificación
-    bool anadir_cancion(Cancion& cancion);
-    bool eliminar_cancion(Cancion& cancion);
+    bool anadir_cancion(Artista& art, const std::string& id9);
+    bool eliminar_cancion(Artista& artist, const std::string ident );
+
+    // Regla de tres
+    ListaSongs(const ListaSongs& other);            // ctor de copia
+    ListaSongs& operator=(const ListaSongs& other); // asignación
 
     // Destructor
     ~ListaSongs();

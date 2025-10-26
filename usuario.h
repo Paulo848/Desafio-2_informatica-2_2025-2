@@ -11,6 +11,7 @@ public:
     // Constructor
     Usuario(const std::string& nickname,
             const std::string& codigo_usuario,
+            const std::string& contrasena,
             const std::string& membresia,
             const std::string& ciudad,
             const std::string& pais,
@@ -30,6 +31,7 @@ public:
     ListaSongs* get_lista_favoritos_otro(); // seguida
 
     // Asociación para seguir otra lista
+    bool set_lista_favoritos(ListaSongs& lista);
     bool set_referencia_favoritos(ListaSongs& lista);
 
     ~Usuario(); // (manejo mínimo, no destruye listas ajenas)

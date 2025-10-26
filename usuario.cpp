@@ -1,17 +1,19 @@
-#include "Usuario.h"
-#include "ListaSongs.h"
+#include "usuario.h"
+#include "listasongs.h"
 
 // -------------------------------------------------------------
 // Constructor
 // -------------------------------------------------------------
 Usuario::Usuario(const std::string& nickname,
                  const std::string& codigo_usuario,
+                 const std::string& contrasena,
                  const std::string& membresia,
                  const std::string& ciudad,
                  const std::string& pais,
                  const std::string& fecha_subs)
     : nickname(nickname),
     codigo_usuario(codigo_usuario),
+    contrasena(contrasena),
     membresia(membresia),
     ciudad(ciudad),
     pais(pais),
@@ -19,6 +21,10 @@ Usuario::Usuario(const std::string& nickname,
     lista_favoritos(nullptr),   // la lista propia se podrá crear después
     favoritos_otro(nullptr)     // aún no sigue a nadie
 {
+
+    if (membresia != "premium" && membresia != "estandar") {
+        this->membresia = "estandar";
+    }
 }
 
 // -------------------------------------------------------------
@@ -43,6 +49,13 @@ ListaSongs* Usuario::get_lista_favoritos_otro() {
 // -------------------------------------------------------------
 // Seguir la lista de otro usuario
 // -------------------------------------------------------------
+
+bool Usuario::set_lista_favoritos(ListaSongs& lista)
+{
+    lista_favoritos = new ListaSongs(lista);
+    return true;
+}
+
 bool Usuario::set_referencia_favoritos(ListaSongs& lista)
 {
     favoritos_otro = &lista;

@@ -1,5 +1,5 @@
 // Album.cpp
-#include "Album.h"
+#include "album.h"
 #include "cancion.h"
 
 // Constructor por defecto
@@ -47,6 +47,9 @@ Album::Album(const std::string& nombre,
         this->generos = new std::string[num_generos];
         for(short int i = 0; i<num_generos; i++) if(generos[i]!= "") this->generos[i] = generos[i];
     }
+    if(this->canciones == nullptr){
+        this->iniciar_array_cancion(num_canciones);
+    }
 }
 
 Album::Album(const std::string& name,
@@ -75,12 +78,11 @@ Album::Album(const std::string& name,
 
 bool Album::iniciar_array_cancion(std::size_t n)
 {
-    if (n == 0) return false;
+    if (n == 0 || canciones != nullptr) return false;
 
     canciones = new Cancion*[n];
     capacidad_can = static_cast<int>(n);
     tamano_can = 0;
-    num_canciones = 0;
 
     for (int i = 0; i < capacidad_can; ++i)
         canciones[i] = nullptr;
@@ -88,15 +90,12 @@ bool Album::iniciar_array_cancion(std::size_t n)
     return true;
 }
 
-bool Album::anadir_cancion(Cancion& cancion)
+bool Album::anadir_cancion(const Cancion& cancion)
 {
-    if (!canciones) return false;                 // no inicializado
-    if (tamano_can >= capacidad_can) return false; // arreglo lleno
-
-    canciones[tamano_can] = &cancion;
-    tamano_can++;
-    num_canciones++;
+    if (!canciones || tamano_can >= capacidad_can) return false;
+    canciones[tamano_can++] = new Cancion(cancion);   // ← COPIA en heap
     return true;
+
 }
 
 Cancion* Album::get_cancion(const std::string& id)
@@ -211,17 +210,92 @@ std::string Album::generos_como_texto(const std::string& sep) const {
     return out;
 }
 
+Album::Album(const Album& o)
+    : nombre(o.nombre),
+    identificador(o.identificador),
+    duracion(o.duracion),
+    selloDiscografico(o.selloDiscografico),
+    fecha_lanzamiento(o.fecha_lanzamiento),
+    puntuacion(o.puntuacion),
+    dir_portada(o.dir_portada),
+    generos(nullptr),
+    num_generos(o.num_generos),
+    canciones(nullptr),
+    num_canciones(o.num_canciones),
+    capacidad_can(o.capacidad_can),
+    tamano_can(0)
+{
+    // copiar generos
+    if (num_generos > 0) {
+        generos = new std::string[num_generos];
+        for (int i = 0; i < num_generos; ++i) generos[i] = o.generos[i];
+    }
+
+    // copiar canciones (deep)
+    if (capacidad_can > 0) {
+        canciones = new Cancion*[capacidad_can];
+        for (int i = 0; i < capacidad_can; ++i) canciones[i] = nullptr;
+        for (int i = 0; i < o.tamano_can; ++i) {
+            if (o.canciones[i]) canciones[i] = new Cancion(*o.canciones[i]);
+        }
+        tamano_can = o.tamano_can;
+    }
+}
+
+Album& Album::operator=(const Album& o) {
+    if (this == &o) return *this;
+
+    // copiar triviales
+    nombre     = o.nombre;
+    identificador      = o.identificador;
+    duracion   = o.duracion;
+    selloDiscografico  = o.selloDiscografico;
+    fecha_lanzamiento = o.fecha_lanzamiento;
+    puntuacion = o.puntuacion;
+    dir_portada= o.dir_portada;
+    num_canciones = o.num_canciones;
+
+    // liberar generos actuales
+    if (generos) { delete [] generos; generos = nullptr; }
+    num_generos = o.num_generos;
+
+    if (num_generos > 0) {
+        generos = new std::string[num_generos];
+        for (int i = 0; i < num_generos; ++i) generos[i] = o.generos[i];
+    }
+
+    // liberar canciones actuales
+    if (canciones) {
+        for (int i = 0; i < tamano_can; ++i) delete canciones[i];
+        delete [] canciones;
+        canciones = nullptr;
+    }
+
+    capacidad_can = o.capacidad_can;
+    tamano_can    = 0;
+
+    if (capacidad_can > 0) {
+        canciones = new Cancion*[capacidad_can];
+        for (int i = 0; i < capacidad_can; ++i) canciones[i] = nullptr;
+        for (int i = 0; i < o.tamano_can; ++i) {
+            if (o.canciones[i]) canciones[i] = new Cancion(*o.canciones[i]);
+        }
+        tamano_can = o.tamano_can;
+    }
+    return *this;
+}
+
+
 Album::~Album()
 {
-    // Si se inicializó con iniciar_array_cancion, liberamos el ARREGLO de punteros.
-    // OJO: NO borramos *canciones[i] porque el álbum no es dueño de esas Cancion.
-    delete[] canciones;
+    if (canciones) {
+        for (int i = 0; i < tamano_can; ++i) delete canciones[i];
+        delete [] canciones;
+    }
     canciones = nullptr;
     capacidad_can = 0;
     tamano_can = 0;
 
-    // Liberamos el arreglo de géneros si fue reservado con new[].
-    // Esto asume propiedad del array 'generos'. Si lo presta un tercero, elimina esta línea.
     delete[] generos;
     generos = nullptr;
     num_generos = 0;

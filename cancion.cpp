@@ -1,6 +1,6 @@
 // Cancion.cpp
-#include "Cancion.h"
-#include "MiembroProduccion.h"
+#include "cancion.h"
+#include "miembroproduccion.h"
 
 // Constructor por defecto
 Cancion::Cancion()
@@ -21,19 +21,23 @@ Cancion::Cancion(const std::string& nombre,
                  const std::string& id_artista,
                  const std::string& id_album,
                  const std::string& id_song,
-                 MiembroProduccion* productores,
-                 short int n_produtc
-                 )
+                 MiembroProduccion** productores_in,
+                 short int          n_produtc)
     : nombre(nombre),
+    identificador(id_artista + id_album + id_song),
     duracion(duracion),
     dir_archivo_premium(dir_archivo_premium),
     dir_archivo_estandar(dir_archivo_estandar),
     reproducciones(reproducciones),
-    productores(productores),
-    num_productores(n_produtc)
+    productores(nullptr),
+    num_productores( (n_produtc < 0) ? 0 : ((n_produtc > 5) ? 5 : n_produtc) ) // cap opcional
 {
-    // Creamos el identificador concatenando los 3 ids
-    identificador = id_artista + id_album + id_song;
+    if (num_productores > 0) {
+        productores = new MiembroProduccion*[num_productores];
+        for (int i = 0; i < num_productores; ++i) {
+            productores[i] = productores_in[i]; // copiamos el puntero (NO propiedad)
+        }
+    }
 }
 
 Cancion::Cancion(const std::string& nombre_,
@@ -44,9 +48,8 @@ Cancion::Cancion(const std::string& nombre_,
                  const std::string& id_artista,
                  const std::string& id_album,
                  const std::string& id_song,
-                 MiembroProduccion* productores,
-                 const std::string& n_produtc
-                 )
+                 MiembroProduccion** productores_in,
+                 const std::string& n_produtc)
     : Cancion(nombre_,
               to_int(duracionStr),
               dir_archivo_premium_,
@@ -55,13 +58,10 @@ Cancion::Cancion(const std::string& nombre_,
               id_artista,
               id_album,
               id_song,
-              productores,
-              to_short(n_produtc)
-              )
-{
-    // Si quisieras fijar el identificador aquí:
-    // identificador = id_artista + "|" + id_album + "|" + id_song;
-}
+              productores_in,
+              to_short(n_produtc))
+{}
+
 
 // Getters
 std::string Cancion::get_nombre() const {
@@ -96,11 +96,57 @@ std::string Cancion::get_ident() const {
 
 short int Cancion::get_num_productores() const{ return num_productores; }
 
+Cancion::Cancion(const Cancion& o)
+    : nombre(o.nombre),
+    identificador(o.identificador),
+    duracion(o.duracion),
+    dir_archivo_premium(o.dir_archivo_premium),
+    dir_archivo_estandar(o.dir_archivo_estandar),
+    reproducciones(o.reproducciones),
+    productores(nullptr),
+    num_productores(o.num_productores)
+{
+    if (num_productores > 0) {
+        productores = new MiembroProduccion*[num_productores];
+        for (int i = 0; i < num_productores; ++i) {
+            productores[i] = o.productores[i]; // copiar puntero (shallow)
+        }
+    }
+}
+
+Cancion& Cancion::operator=(const Cancion& o) {
+    if (this == &o) return *this;
+
+    // copiar triviales
+    nombre            = o.nombre;
+    identificador             = o.identificador;
+    duracion          = o.duracion;
+    dir_archivo_premium  = o.dir_archivo_premium;
+    dir_archivo_estandar = o.dir_archivo_estandar;
+    reproducciones    = o.reproducciones;
+
+    // reemplazar arreglo de punteros (NO borrar los objetos apuntados)
+    if (productores) { delete [] productores; productores = nullptr; }
+    num_productores = o.num_productores;
+
+    if (num_productores > 0) {
+        productores = new MiembroProduccion*[num_productores];
+        for (int i = 0; i < num_productores; ++i) {
+            productores[i] = o.productores[i]; // copiar puntero (shallow)
+        }
+    }
+    return *this;
+}
+
+Cancion::~Cancion() {
+    if (productores) { delete [] productores; productores = nullptr; }
+}
+
 void Cancion::anadir_ident(const std::string& id_artist,
                                    const std::string& id_albm,
                                    const std::string& id_song)
 {
-    identificador = id_artist + "-" + id_albm + "-" + id_song;
+    identificador = id_artist+ id_albm + id_song;
 }
 
 bool Cancion::parse_long(const std::string& s, long& out) {

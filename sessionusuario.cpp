@@ -1,6 +1,6 @@
-#include "SessionUsuario.h"
-#include "Sistema.h"
-#include "Usuario.h"
+#include "sessionusuario.h"
+#include "sistema.h"
+#include "usuario.h"
 // Incluye el header real de tu Reproductor
 // #include "Reproductor.h"
 // Incluye lo que necesites para favoritos/anuncios cuando los tengas

@@ -1,6 +1,6 @@
 // Artista.cpp
-#include "Artista.h"
-#include "Album.h"
+#include "artista.h"
+#include "album.h"
 
 Artista::Artista()
     : nickname(),
@@ -29,10 +29,12 @@ Artista::Artista(const std::string& nickname,
     numSeguidores(numSeguidores),
     rankingGlobal(rankingGlobal),
     albumes(nullptr),
-    numAlbumes(numAlbumes),  // lo puedes usar o eliminar luego
+    numAlbumes(numAlbumes),
     capacidad_alb(0),
     tamano_alb(0)
-{}
+{
+    this->iniciar_array_album(this->get_num_albumes());
+}
 
 Artista::Artista(const std::string& nickname_,
                  const std::string& identificador_,
@@ -63,20 +65,17 @@ bool Artista::iniciar_array_album(std::size_t n)
     return true;
 }
 
-bool Artista::anadir_album(Album& album)
-{
-    if (!albumes) return false;                     // no inicializado
-    if (tamano_alb >= capacidad_alb) return false;  // lleno
-
-    albumes[tamano_alb] = &album;  // guardamos el puntero
-    ++tamano_alb;
+bool Artista::anadir_album(const Album& album) {
+    if (!albumes || tamano_alb >= capacidad_alb) return false;
+    albumes[tamano_alb++] = new Album(album);
     return true;
 }
 
-Artista::~Artista()
-{
-    delete[] albumes;   // solo borramos el arreglo de punteros
-    // (no borramos los álbumes a los que apuntan)
+Artista::~Artista() {
+    if (albumes) {
+        for (int i = 0; i < tamano_alb; ++i) delete albumes[i];
+        delete [] albumes;
+    }
 }
 
 Album* Artista::get_album(const std::string& id)
@@ -128,7 +127,6 @@ bool Artista::parse_long(const std::string& s, long& out) {
     for (; i < n; ++i) {
         char c = s[i];
         if (c < '0' || c > '9') {
-            // permitir espacios finales
             while (i < n && (s[i] == ' ' || s[i] == '\t')) ++i;
             return anyDigit && i == n ? (out = val * sign, true) : false;
         }
@@ -169,6 +167,63 @@ short Artista::to_short(const std::string& s, short def) {
     if (v >  32767L) v =  32767L;
     return static_cast<short>(v);
 }
+
+Artista::Artista(const Artista& o)
+    : nickname(o.nickname),
+    identificador(o.identificador),
+    edad(o.edad),
+    pais(o.pais),
+    numSeguidores(o.numSeguidores),
+    rankingGlobal(o.rankingGlobal),
+    albumes(nullptr),
+    numAlbumes(o.numAlbumes),
+    capacidad_alb(o.capacidad_alb),
+    tamano_alb(0)
+{
+    if (capacidad_alb > 0) {
+        albumes = new Album*[capacidad_alb];
+        for (int i = 0; i < capacidad_alb; ++i) albumes[i] = nullptr;
+        for (int i = 0; i < o.tamano_alb; ++i) {
+            if (o.albumes[i]) albumes[i] = new Album(*o.albumes[i]);
+        }
+        tamano_alb = o.tamano_alb;
+    }
+}
+
+Artista& Artista::operator=(const Artista& o) {
+    if (this == &o) return *this;
+
+    // copiar triviales
+    nickname      = o.nickname;
+    identificador = o.identificador;
+    edad          = o.edad;
+    pais          = o.pais;
+    numSeguidores = o.numSeguidores;
+    rankingGlobal = o.rankingGlobal;
+    numAlbumes    = o.numAlbumes;
+
+    // liberar estado actual
+    if (albumes) {
+        for (int i = 0; i < tamano_alb; ++i) delete albumes[i];
+        delete [] albumes;
+        albumes = nullptr;
+    }
+
+    capacidad_alb = o.capacidad_alb;
+    tamano_alb    = 0;
+
+    // copiar álbumes (deep)
+    if (capacidad_alb > 0) {
+        albumes = new Album*[capacidad_alb];
+        for (int i = 0; i < capacidad_alb; ++i) albumes[i] = nullptr;
+        for (int i = 0; i < o.tamano_alb; ++i) {
+            if (o.albumes[i]) albumes[i] = new Album(*o.albumes[i]);
+        }
+        tamano_alb = o.tamano_alb;
+    }
+    return *this;
+}
+
 
 // Getters
 std::string Artista::get_nom()         const { return nickname; }

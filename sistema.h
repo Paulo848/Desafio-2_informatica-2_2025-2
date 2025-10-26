@@ -48,10 +48,10 @@ public:
     bool iniciar_array_miem(int capacidad);
 
     // Altas (Sistema es dueño de los objetos almacenados)
-    bool anadir_artista(Artista& a);
-    bool anadir_usuario(Usuario& u);
-    bool anadir_anuncio(Anuncio& a);
-    bool anadir_miembro(MiembroProduccion& m);
+    bool anadir_artista(const Artista& a);
+    bool anadir_usuario(const Usuario& u);
+    bool anadir_anuncio(const Anuncio& a);
+    bool anadir_miembro(const MiembroProduccion& m);
 
     // Getters de capacidad/tamaño
     int get_capacidad_arts() const;

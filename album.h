@@ -64,9 +64,12 @@ public:
                       const std::string&);
 
     bool iniciar_array_cancion(std::size_t n);
-    bool anadir_cancion(Cancion& cancion);
+    bool anadir_cancion(const Cancion& cancion);
 
     void aumentar_duracion();
+
+    Album(const Album& other);
+    Album& operator=(const Album& other);
 
     ~Album();
 
